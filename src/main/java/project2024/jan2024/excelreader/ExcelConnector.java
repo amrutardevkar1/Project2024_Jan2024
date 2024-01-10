@@ -27,7 +27,7 @@ public class ExcelConnector {
 	FileInputStream excelFileReader;
 	FileOutputStream excelFileWriter;
 	private XSSFWorkbook excelWorkbook;
-	OPCPackage opcPacakge;
+	OPCPackage opcPackage;
 	private XSSFSheet excelSheet;
 	private static final Logger logger = Logger.getLogger(ExcelConnector.class);
 	private Map<Object, Object> dictionary = new HashMap<>();
@@ -135,7 +135,7 @@ public class ExcelConnector {
 		currentCol=2;
 	}
 	
-	public void loadTestDataSheet(String excelSheetName)
+	public void loadTestdataSheet(String excelSheetName)
 	{
 		loadExcelSheet(excelSheetName);
 		currentCol=2;
@@ -164,5 +164,37 @@ public class ExcelConnector {
 			list.add((HashMap<Object,Object>) dictionary);
 		}
 	}
- //start excelconnector7
+ 
+	public List<String> getColumnData(String path, int colIndex, String sheetname)
+	{
+		List<String> rowvalues = new ArrayList<>();
+		try(FileInputStream file = new FileInputStream(new File(path)))
+		{
+			opcPackage= OPCPackage.open(file);
+			excelWorkbook = new XSSFWorkbook(opcPackage);
+			excelSheet =excelWorkbook.getSheet(sheetname);
+			 int rowCount = excelSheet.getPhysicalNumberOfRows();
+			 logger.info("Row Count is:" + rowCount);
+			 
+			 Iterator<Row> rowIterator = excelSheet.iterator();
+			 Row row1;
+			 
+			 while(rowIterator.hasNext())
+			 {
+				 row1= rowIterator.next();
+				 if((!row1.getCell(colIndex).toString().isEmpty()) && (row1.getCell(colIndex)!= null) && (row1.getCell(colIndex).toString().equalsIgnoreCase("Yes")))
+				 {
+					 rowvalues.add(row1.getCell(colIndex-5).toString() + ";" + row1.getCell(colIndex-4).toString());
+						 
+				 }
+			 }
+			 
+			 return rowvalues;
+		}
+		catch(IOException | InvalidFormatException e)
+		{
+			logger.info("Unable to getColumnData");
+			return rowvalues;
+		}
+	}
 }
